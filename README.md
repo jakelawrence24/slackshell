@@ -1,0 +1,2 @@
+# slackshell
+CLI for slack
