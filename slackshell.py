@@ -6,10 +6,11 @@ SLACK_TOKEN = os.environ['SLACK_TOKEN']
 sc = SlackClient(SLACK_TOKEN)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p","--post", help="Channel where the message will be sent")
-parser.add_argument("-s","--send", help="Channel where the message will be sent")
-parser.add_argument("-u","--update", help="Channel where the message will be sent")
+parser.add_argument("--post", help="Channel where the message will be sent")
+parser.add_argument("--send", help="Channel where the message will be sent")
+parser.add_argument("--update", help="Channel where the message will be sent")
 parser.add_argument("--history", help="Get messages that match a certain query")
+parser.add_argument("-u","--upload", help="Upload files to a certain location")
 parser.add_argument("-ls","--list", help="Lists all information that matches the query")
 parser.add_argument("-c","--channel", help="Channel where the message will be sent")
 parser.add_argument("-r","--receiver", help="Recipent where the message will be sent")
@@ -26,11 +27,26 @@ message_cache = open("cache/message_cache.txt", 'a')
 def channelToID(ch):
     if('#' in ch):
         nch = ch.replace('#','')
+        ch = nch
 
     c = sc.api_call("channels.list")
     for n in c['channels']:
-        if(nch in n['name']):
+        if(ch in n['name']):
             return n['id']
+
+def usernameToID(us):
+    if(us[0] == "@"):
+        n_us = us.replace("@","")
+        return listUsers("np_id", n_us)
+    else:
+        return listUsers("np_id", us)
+
+def idToUser(id):
+    s = sc.api_call("users.list")
+    sm = s['members']
+    for x in range(0,len(sm)):
+        if(sm[x]['id'] == id):
+            return sm[x]['name']
 
 # messaging functions
 def postMessage(ch,message):
@@ -40,6 +56,9 @@ def postMessage(ch,message):
         print("Posted: '" + message + "' in " + ch)
 
 def sendMessage(receiver,message):
+    if(message[0] != '@'):
+        temp = '@' + receiver
+        receiver = temp
     if(str(args.message).lower != "null"):
         s = sc.api_call("chat.postMessage", channel=receiver,text=message)['message']
         message_cache.write(str(s) + "\n")
@@ -51,25 +70,60 @@ def updateMessage(time,channel,message):
 # listing functions
 def listChannels(query=None):
     s = sc.api_call("channels.list")['channels']
+    l = ['']
     if(query == None):
         for key in s:
             print("#" + key['name'])
+            l.append(key['name'])
+        return l
     elif(query.lower() == "members"):
         for key in s:
             print("#" + key['name'])
             n = key['num_members']
+            l.append(key['name'])
             p = 's'
             if(n == 1):
                 p = ''
             print(str(n) + " member" + p)
+        return l
     elif(query.lower() == "info"):
         for key in s:
             print("#" + key['name'])
+            l.append(key['name'])
             d = key['topic']['value']
             if(d == ''):
                 print("Channel contains no description")
             else:
                 print(d)
+        return l
+    else:
+        print("Error: " + "'" + query + "' is an invalid query")
+
+def np_listChannels(query=None):
+    s = sc.api_call("channels.list")['channels']
+    l = ['']
+    if(query == None):
+        for key in s:
+            l.append(key['name'])
+        return l
+    elif(query.lower() == "members"):
+        for key in s:
+            n = key['num_members']
+            l.append(key['name'])
+            p = 's'
+            if(n == 1):
+                p = ''
+            print(str(n) + " member" + p)
+        return l
+    elif(query.lower() == "info"):
+        for key in s:
+            l.append(key['name'])
+            d = key['topic']['value']
+            if(d == ''):
+                print("Channel contains no description")
+            else:
+                print(d)
+        return l
     else:
         print("Error: " + "'" + query + "' is an invalid query")
 
@@ -78,11 +132,11 @@ def listEmoji():
     for x in s['emoji']:
         print(x)
 
-def listGroups(query=None):
+def listGroups():
     s = sc.api_call("groups.list")
-    if(query == None):
-        for x in s['groups']:
-            print("#" + x['name'])
+    for x in s['groups']:
+        print("#" + x['name'])
+
 def listDM():
     s = sc.api_call("im.list")
     p = sc.api_call("users.list")
@@ -102,12 +156,120 @@ def listPins(ch):
     for p in s['items']:
         print(p['message']['username'] + ": " + p['message']['text'])
 
+def listUsers(query=None,address=None):
+    s = sc.api_call("users.list")
+    if(address != None):
+        if(address[0] == '#'):
+            temp = address.replace('#', '')
+            address = temp
+        if(not(address in np_listChannels()) and str(query).lower() != 'np_id'):
+            print("Error: Invalid address")
+            return
+        elif(str(query).lower() != 'np_id'):
+            address = channelToID(address)
+            s = sc.api_call("channels.info",channel=address)
+            for m in s['channel']['members']:
+                print(idToUser(m))
+            return
+    if(str(query).lower() == "np_id"):
+        for u in s['members']:
+            m = u['name']
+            if(address == m):
+                return u['id']
+    elif(str(query).lower() == "id"):
+        for u in s['members']:
+            m = u[query.lower()]
+            print(m)
+    elif(str(query).lower() == "rn"):
+        for u in s['members']:
+            m = u['real_name']
+            print(m)
+    elif(str(query).lower() == "email"):
+        for u in s['members']:
+            m = u['profile']
+            try:
+                print(m['name'] + ": " + m[str(query).lower()])
+            except:
+                print(m['real_name'] + ": ")
+    elif(str(query).lower() == "phone"):
+        for u in s['members']:
+            m = u['profile']
+            try:
+                print(m['name'] + ": " + m[str(query).lower()])
+            except:
+                print(m['name'] + ": ")
+    elif(str(query).lower() == "skype"):
+        for u in s['members']:
+            m = u['profile']
+            try:
+                print(m['name'] + ": " + m[str(query).lower()])
+            except:
+                print(m['name'] + ": ")
+    elif(str(query).lower() == "fn"):
+        for u in s['members']:
+            m = u['profile']
+            try:
+                print(m['name'] + ": " + m['first_name'])
+            except:
+                print(m['name'] + ": ")
+    elif(str(query).lower() == "ln"):
+        for u in s['members']:
+            m = u['profile']
+            try:
+                print(m['name'] + ": " + m['last_name'])
+            except:
+                print(m['name'] + ": ")
+    elif(query == None or str(query).lower() == "name"):
+        for u in s['members']:
+            m = u['name']
+            print(m)
+    else:
+        if(query != None):
+            print("Error: Invalid query")
+        else:
+            print("Error: Invalid address")
+
+def listReactions(us=None):
+    if(us==None):
+        s = sc.api_call("reactions.list")
+        ts = ['']
+        for x in s['items']:
+            t = x['message']['ts']
+            y = x['message']['reactions']
+            for r in y:
+                if(not(t in ts)):
+                    for p in y:
+                        print(p['name'])
+                    ts.append(t)
+    else:
+        try:
+            temp = us
+            us = usernameToID(us)
+            s = sc.api_call("reactions.list",user=us)
+            reactions = ['']
+            ts = ['']
+            print("Reactions by: " + temp)
+            for x in s['items']:
+                t = x['message']['ts']
+                y = x['message']['reactions']
+                for r in y:
+                    if(not(t in ts)):
+                        for p in y:
+                            reaction = p['name']
+                            if(not(reaction in reactions)):
+                                print(reaction)
+                                reactions.append(reaction)
+                        ts.append(t)
+        except:
+            print("Error: Invalid user")
+
 # history functions
 def getHistory(id,channel):
     print("WIP")
 
 # decides what functions to call
 def delegate(args):
+
     if(args.post != None):
         if(args.channel != None):
             args.address = args.channel
@@ -144,12 +306,47 @@ def delegate(args):
         elif(str(args.list).lower() == "dm"):
             listDM()
         elif(str(args.list).lower() == "pins"):
-            if(args.channel != None):
-                listPins(args.channel)
+            if(args.channel != None or args.address != None):
+                if(args.address == None):
+                    args.address = args.channel
+                listPins(args.address)
             else:
                 print("Error: You must provide a valid channel")
+        elif(str(args.list).lower() == "reactions"):
+            if(args.address == None):
+                listReactions()
+            else:
+                listReactions(args.address)
+        elif(str(args.list).lower() == "users"):
+            if(args.query != None):
+                if(args.channel != None or args.address != None):
+                    if(args.address == None):
+                        args.address = args.channel
+                    listUsers(args.query,args.address)
+                else:
+                    listUsers(args.query)
+            else:
+                if(args.channel != None or args.address != None):
+                    if(args.address == None):
+                        args.address = args.channel
+                    listUsers(None,args.address)
+                else:
+                    listUsers()
 
 # initiates program
-delegate(args)
+try:
+    delegate(argxs)
+except Exception as e:
+    if(e.__class__.__name__ == 'TimeOutError'):
+        print("Operation Timed Out; try again.")
+    elif (e.__class__.__name__ == 'ConnectionError'):
+        print("Unable to connect. Reconnect to your wifi and try again")
+    else:
+        print("Unknown error")
+        x = input("Enter developer code to view error message > ")
+        if(x == os.environ['DEV_TOKEN']):
+            print(str(e.__class__.__name__) + ": " + str(e))
+        else:
+            print("Incorrect developer code")
 # closes cache
 message_cache.close()
