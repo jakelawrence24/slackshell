@@ -1,0 +1,2 @@
+{'text': 'this is a test', 'username': 'Slack API Tester', 'ts': '1483221138.000004', 'send_to': '@jake', 'type': 'message', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4'}
+{'username': 'Slack API Tester', 'send_to': '@slackbot', 'text': 'this', 'ts': '1483221152.903311', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4', 'type': 'message'}

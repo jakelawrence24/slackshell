@@ -1,6 +1,7 @@
 from slackclient import SlackClient
 import os
 import argparse
+import ast
 
 SLACK_TOKEN = os.environ['SLACK_TOKEN']
 sc = SlackClient(SLACK_TOKEN)
@@ -9,7 +10,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--post", help="Channel where the message will be sent")
 parser.add_argument("--send", help="Channel where the message will be sent")
 parser.add_argument("--update", help="Channel where the message will be sent")
-parser.add_argument("--history", help="Get messages that match a certain query")
 parser.add_argument("-u","--upload", help="Upload files to a certain location")
 parser.add_argument("-ls","--list", help="Lists all information that matches the query")
 parser.add_argument("-c","--channel", help="Channel where the message will be sent")
@@ -20,10 +20,13 @@ parser.add_argument("-a","--address", help="Address to where the message will be
 parser.add_argument("-m", "--message", help="Input is the message that will be sent")
 parser.add_argument("-t", "--time", help="Timestamp of the message that wants to be updated")
 parser.add_argument("-q", "--query", help="Specifics for list. Possible args are 'info', 'members'")
+parser.add_argument("-tp", "--type", help="File type for file operations")
+parser.add_argument("-co", "--count", help="Amount listed for file and message listing")
+parser.add_argument("-us", "--user", help="Username for specified user")
 
 args = parser.parse_args()
 
-message_cache = open("cache/message_cache.txt", 'a')
+message_cache = open("cache/.message_cache.txt", 'a')
 
 # helper functions
 def channelToID(ch):
@@ -50,6 +53,13 @@ def idToUser(id):
         if(sm[x]['id'] == id):
             return sm[x]['name']
 
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+        f.close
+    return i + 1
+
 # messaging functions
 def postMessage(ch,message):
     if(str(args.message).lower() != "null"):
@@ -62,12 +72,14 @@ def sendMessage(receiver,message):
         temp = '@' + receiver
         receiver = temp
     if(str(args.message).lower != "null"):
-        s = sc.api_call("chat.postMessage", channel=receiver,text=message)['message']
-        message_cache.write(str(s) + "\n")
+        s = sc.api_call("chat.postMessage", channel=receiver,text=message)
+        m = s['message']
+        m['send_to'] = receiver
+        message_cache.write(str(m) + "\n")
         print("Sent '" + message + "' to " + receiver)
 
 def updateMessage(time,channel,message):
-    print("f")
+    print("WIP")
 
 # file functions
 def fileUpload(fn,address,cm=None,ti=None):
@@ -92,7 +104,7 @@ def fileUpload(fn,address,cm=None,ti=None):
                 channels=address,is_public="True",initial_comment=cm)
     except:
         print("Error: Invalid channel(s)")
-    print(s)
+    print("Uploaded: '" + fn + "'")
 
 # listing functions
 def listChannels(query=None):
@@ -290,13 +302,82 @@ def listReactions(us=None):
         except:
             print("Error: Invalid user")
 
-# history functions
-def getHistory(id,channel):
-    print("WIP")
+def listFiles(_address=None,_type=None,_count=None,_user=None):
+    if(_address != None):
+        _address = channelToID(_address)
+    if(_user != None):
+        _user = usernameToID(_user)
+        if(_user == None):
+            print("Error: Invalid user")
+            return
+    if(_address != None):
+        if(_user != None):
+            if(_type != None):
+                if(_count != None):
+                    s = sc.api_call("files.list",channel=_address,types=_type,
+                    count=_count,user=_user)
+                else:
+                    s = sc.api_call("files.list",channel=_address,types=_type,
+                    user=_user)
+            elif(_count != None):
+                s = sc.api_call("files.list",channel=_address,count=_count,
+                user=_user)
+            else:
+                s = sc.api_call("files.list",channel=_address,user=_user)
+        else:
+            if(_type != None):
+                if(_count != None):
+                    s = sc.api_call("files.list",channel=_address,types=_type,
+                    count=_count)
+                else:
+                    s = sc.api_call("files.list",channel=_address,types=_type)
+            elif(_count != None):
+                s = sc.api_call("files.list",channel=_address,count=_count)
+            else:
+                s = sc.api_call("files.list",channel=_address)
+    elif(_type != None):
+        if(_count != None):
+            s = sc.api_call("files.list",types=_type,count=_count)
+        else:
+            s = sc.api_call("files.list",types=_type)
+    elif(_count != None):
+        s = sc.api_call("files.list",count=_count)
+    else:
+        s = sc.api_call("files.list")
+    links = []
+    for x in s:
+        f = s['files']
+        for y in f:
+            try:
+                el = y['edit_link']
+                temp = el.replace('/edit','')
+                el = temp
+                if(not(el in links)):
+                    links.append(el)
+                    print(el)
+            except:
+                next
+
+def listSent(address=None):
+    if(address == None):
+        try:
+            l = file_len('cache/.message_cache.txt')
+        except:
+            l = 0
+        p = ''
+        if(l > 1 or l == 0):
+            p = 's'
+
+        print(str(l) + " message" + p + " sent")
+        i = 1
+        with open('cache/.message_cache.txt') as f:
+            for line in f:
+                dl = ast.literal_eval(line)
+                print("[" + str(i) + "] [To: " + dl['send_to']+ "] " + dl['text'])
+                i += 1
 
 # decides what functions to call
 def delegate(args):
-
     if(args.post != None):
         if(args.channel != None):
             args.address = args.channel
@@ -311,12 +392,6 @@ def delegate(args):
             sendMessage(args.address, args.send)
         except:
             print("Error: Invalid recipent")
-    elif(args.history != None):
-        if(args.channel != None):
-            try:
-                getHistory(args.history,args.channel)
-            except:
-                print("Error: Invalid ID or Channel")
     elif(args.update != None):
         e = "Error: Update must contain valid timestamp, channel, and message fields"
         updateMessage(args.time, args.channel, args.message)
@@ -359,14 +434,15 @@ def delegate(args):
                     listUsers(None,args.address)
                 else:
                     listUsers()
-        elif(str(args.list).lower == "files"):
-            # user
-
-            # channels
-
-            # types
-
-            # count (add to all listing functions)
+        elif(str(args.list).lower() == "files"):
+            if(args.channel != None or args.address != None):
+                if(args.address == None):
+                    args.address = args.channel
+            listFiles(args.address,args.type,args.count,args.user)
+        elif(str(args.list).lower() == "sent"):
+            listSent()
+        else:
+            print("Unable to process listing")
     elif(args.upload != None):
         if(args.channel != None or args.address != None):
             if(args.address == None):
@@ -374,6 +450,8 @@ def delegate(args):
             fileUpload(args.upload,args.address,args.comment,args.label)
         else:
             print("Error: You must provide a channel or channels")
+    else:
+        print("Invalid command")
 
 # initiates program
 #try:
