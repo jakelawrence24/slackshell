@@ -13,6 +13,8 @@ parser.add_argument("--history", help="Get messages that match a certain query")
 parser.add_argument("-u","--upload", help="Upload files to a certain location")
 parser.add_argument("-ls","--list", help="Lists all information that matches the query")
 parser.add_argument("-c","--channel", help="Channel where the message will be sent")
+parser.add_argument("-cm", "--comment", help="Comment for the file uploaded")
+parser.add_argument("-l","--label", help="Label for the uploaded file")
 parser.add_argument("-r","--receiver", help="Recipent where the message will be sent")
 parser.add_argument("-a","--address", help="Address to where the message will be sent")
 parser.add_argument("-m", "--message", help="Input is the message that will be sent")
@@ -66,6 +68,31 @@ def sendMessage(receiver,message):
 
 def updateMessage(time,channel,message):
     print("f")
+
+# file functions
+def fileUpload(fn,address,cm=None,ti=None):
+    f = open(fn, 'r')
+    if('#' in address):
+        temp = address.replace('#','')
+        address = temp
+    try:
+        if(cm == None):
+            if(ti != None):
+                s = sc.api_call("files.upload", file=f, filename=fn,
+                channels=address,is_public="True",title=ti)
+            else:
+                s = sc.api_call("files.upload", file=f, filename=fn,
+                channels=address,is_public="True")
+        else:
+            if(ti != None):
+                s = sc.api_call("files.upload", file=f, filename=fn,
+                channels=address,is_public="True",title=ti,initial_comment=cm)
+            else:
+                s = sc.api_call("files.upload", file=f, filename=fn,
+                channels=address,is_public="True",initial_comment=cm)
+    except:
+        print("Error: Invalid channel(s)")
+    print(s)
 
 # listing functions
 def listChannels(query=None):
@@ -293,7 +320,7 @@ def delegate(args):
     elif(args.update != None):
         e = "Error: Update must contain valid timestamp, channel, and message fields"
         updateMessage(args.time, args.channel, args.message)
-    elif(args.list.lower() != None):
+    elif(args.list != None):
         if(str(args.list).lower() == "channels"):
             if(args.query != None):
                 listChannels(args.query)
@@ -332,11 +359,26 @@ def delegate(args):
                     listUsers(None,args.address)
                 else:
                     listUsers()
+        elif(str(args.list).lower == "files"):
+            # user
+
+            # channels
+
+            # types
+
+            # count (add to all listing functions)
+    elif(args.upload != None):
+        if(args.channel != None or args.address != None):
+            if(args.address == None):
+                args.address = args.channel
+            fileUpload(args.upload,args.address,args.comment,args.label)
+        else:
+            print("Error: You must provide a channel or channels")
 
 # initiates program
-try:
-    delegate(argxs)
-except Exception as e:
+#try:
+delegate(args)
+'''except Exception as e:
     if(e.__class__.__name__ == 'TimeOutError'):
         print("Operation Timed Out; try again.")
     elif (e.__class__.__name__ == 'ConnectionError'):
@@ -347,6 +389,6 @@ except Exception as e:
         if(x == os.environ['DEV_TOKEN']):
             print(str(e.__class__.__name__) + ": " + str(e))
         else:
-            print("Incorrect developer code")
+            print("Incorrect developer code")'''
 # closes cache
 message_cache.close()
