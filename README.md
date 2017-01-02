@@ -5,7 +5,7 @@ SlackShell is a command line interface for the popular team-messaging platform, 
 ###Table of Contents
 Installation
 
-[Getting Started]
+[Getting Started](https://github.com/jakelawrence24/slackshell/blob/master/README.md#gettingstarted
 
 [Basic Use]
 
