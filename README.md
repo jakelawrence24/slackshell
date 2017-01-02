@@ -3,7 +3,7 @@
 
 SlackShell is a command line interface for the popular team-messaging platform, Slack. The purpose of SlackShell is to allow the user to maintain efficiency while working and interacting with slack.
 ###Table of Contents
-[Installation](https://github.com/jakelawrence24/slackshell/blob/master/README.md#install)  
+[Installation](https://github.com/jakelawrence24/slackshell/blob/master/README.md#installation)  
 [Getting Started](https://github.com/jakelawrence24/slackshell/blob/master/README.md#getting-started)  
 [Basic Use](https://github.com/jakelawrence24/slackshell/blob/master/README.md#basic-use)  
 [Sending and Posting](https://github.com/jakelawrence24/slackshell/blob/master/README.md#sending-and-posting)  
@@ -11,3 +11,21 @@ SlackShell is a command line interface for the popular team-messaging platform, 
 [Listing](https://github.com/jakelawrence24/slackshell/blob/master/README.md#listing)  
 [View and Reply](https://github.com/jakelawrence24/slackshell/blob/master/README.md#view-and-reply)  
 [Channels](https://github.com/jakelawrence24/slackshell/blob/master/README.md#channels)  
+
+##Installation
+
+##Getting Started
+
+##Basic Use
+
+##Sending and Posting
+
+##Uploading
+
+##Listing
+
+##View and Reply
+
+##Channels
+
+
