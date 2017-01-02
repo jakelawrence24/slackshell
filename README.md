@@ -3,3 +3,18 @@
 
 SlackShell is a command line interface for the popular team-messaging platform, Slack. The purpose of SlackShell is to allow the user to maintain efficiency while working and interacting with slack.
 ###Table of Contents
+Installation
+
+[Getting Started]
+
+[Basic Use]
+
+[Sending and Posting]
+
+[Uploading]
+
+[Listing]
+
+[View/Reply]
+
+[Channels]
