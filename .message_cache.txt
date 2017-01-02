@@ -1,0 +1,19 @@
+{'text': 'this is a test', 'username': 'Slack API Tester', 'ts': '1483221138.000004', 'send_to': '@jake', 'type': 'message', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4'}
+{'username': 'Slack API Tester', 'send_to': '@slackbot', 'text': 'this', 'ts': '1483221152.903311', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4', 'type': 'message'}
+{'subtype': 'bot_message', 'type': 'message', 'text': '@jake ok sounds good', 'ts': '1483304646.000002', 'username': 'Slack API Tester', 'bot_id': 'B3J5ZU2N4'}
+{'text': '<@U3JUR8GH2|jake> ok sounds good', 'bot_id': 'B3J5ZU2N4', 'ts': '1483306580.000003', 'type': 'message', 'subtype': 'bot_message', 'username': 'Slack API Tester'}
+{'bot_id': 'B3J5ZU2N4', 'type': 'message', 'ts': '1483306611.000004', 'text': '<@U3JUR8GH2|jake> ok sounds good', 'username': 'Slack API Tester', 'subtype': 'bot_message'}
+{'text': 'this is a test', 'username': 'Slack API Tester', 'bot_id': 'B3J5ZU2N4', 'type': 'message', 'subtype': 'bot_message', 'ts': '1483309114.000005'}
+{'username': 'Slack API Tester', 'ts': '1483309132.000006', 'type': 'message', 'bot_id': 'B3J5ZU2N4', 'text': '@jake this is a test', 'subtype': 'bot_message'}
+{'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4', 'ts': '1483309319.000002', 'username': 'Slack API Tester', 'type': 'message', 'send_to': '@jake', 'text': '@jake this is a test'}
+{'send_to': '@jake', 'type': 'message', 'ts': '1483310867.000003', 'bot_id': 'B3J5ZU2N4', 'username': 'Slack API Tester', 'text': '@jake this is a test', 'subtype': 'bot_message'}
+{'subtype': 'bot_message', 'ts': '1483312051.000004', 'type': 'message', 'text': '@jake this is a test', 'username': 'Slack API Tester', 'send_to': '@jake', 'bot_id': 'B3J5ZU2N4'}
+{'text': '@jake this is a test', 'username': 'Slack API Tester', 'ts': '1483320363.000002', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4', 'type': 'message'}
+{'username': 'Slack API Tester', 'subtype': 'bot_message', 'ts': '1483320646.000003', 'text': '@jake this is a test', 'type': 'message', 'bot_id': 'B3J5ZU2N4'}
+{'bot_id': 'B3J5ZU2N4', 'ts': '1483320780.000004', 'type': 'message', 'username': 'Slack API Tester', 'text': '@jake this is a test', 'subtype': 'bot_message'}
+{'text': '@jake this is a test', 'username': 'Slack API Tester', 'type': 'message', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4', 'ts': '1483321025.000005'}
+{'username': 'Slack API Tester', 'bot_id': 'B3J5ZU2N4', 'ts': '1483321041.000006', 'type': 'message', 'subtype': 'bot_message', 'text': '<@U3JUR8GH2|jake> this is a test'}
+{'subtype': 'bot_message', 'type': 'message', 'username': 'Slack API Tester', 'ts': '1483321204.000007', 'bot_id': 'B3J5ZU2N4', 'text': '<@U3JUR8GH2|jake> this is a test'}
+{'text': '<@U3JUR8GH2|jake> this is a test', 'type': 'message', 'username': 'Slack API Tester', 'bot_id': 'B3J5ZU2N4', 'subtype': 'bot_message', 'ts': '1483321216.000008'}
+{'ts': '1483321287.000009', 'bot_id': 'B3J5ZU2N4', 'username': 'Slack API Tester', 'text': '@jae this is a test', 'type': 'message', 'subtype': 'bot_message'}
+{'type': 'message', 'username': 'Slack API Tester', 'ts': '1483378718.048495', 'text': '<@U3JUR8GH2|jake> this is a test', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4'}

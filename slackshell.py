@@ -2,31 +2,35 @@ from slackclient import SlackClient
 import os
 import argparse
 import ast
+import random
 
 SLACK_TOKEN = os.environ['SLACK_TOKEN']
 sc = SlackClient(SLACK_TOKEN)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--post", help="Channel where the message will be sent")
-parser.add_argument("--send", help="Channel where the message will be sent")
+
+parser.add_argument("-a","--address", help="Address to where the message will be sent")
+parser.add_argument("-c","--channel", help="Channel where the message will be sent")
+parser.add_argument("-co","--count", help="Amount listed for file and message listing")
+parser.add_argument("-cm","--comment", help="Comment for the file uploaded")
+parser.add_argument("-l","--label", help="Label for the uploaded file")
+parser.add_argument("-ls","--list", help="Lists all information that matches the query")
+parser.add_argument("-m","--message", help="Input is the message that will be sent")
+parser.add_argument("-p","--post",nargs=2,help="Channel where the message will be sent",
+metavar=('MESSAGE','CHANNEL'))
+parser.add_argument("-q","--query", help="Specifics for list. Possible args are 'info', 'members'")
+parser.add_argument("-r","--receiver", help="Recipent where the message will be sent")
+parser.add_argument("--reply", help="Reply to user who mentioned you last")
+parser.add_argument("-s","--send", nargs=2, help="Channel where the message will be sent",
+metavar=('MESSAGE','RECIPENT'))
+parser.add_argument("-tp","--type", help="File type for file operations")
 parser.add_argument("--update", help="Channel where the message will be sent")
 parser.add_argument("-u","--upload", help="Upload files to a certain location")
-parser.add_argument("-ls","--list", help="Lists all information that matches the query")
-parser.add_argument("-c","--channel", help="Channel where the message will be sent")
-parser.add_argument("-cm", "--comment", help="Comment for the file uploaded")
-parser.add_argument("-l","--label", help="Label for the uploaded file")
-parser.add_argument("-r","--receiver", help="Recipent where the message will be sent")
-parser.add_argument("-a","--address", help="Address to where the message will be sent")
-parser.add_argument("-m", "--message", help="Input is the message that will be sent")
-parser.add_argument("-t", "--time", help="Timestamp of the message that wants to be updated")
-parser.add_argument("-q", "--query", help="Specifics for list. Possible args are 'info', 'members'")
-parser.add_argument("-tp", "--type", help="File type for file operations")
-parser.add_argument("-co", "--count", help="Amount listed for file and message listing")
-parser.add_argument("-us", "--user", help="Username for specified user")
+parser.add_argument("-v","--view", help="View recent activity in a certain channel")
 
 args = parser.parse_args()
 
-message_cache = open("cache/.message_cache.txt", 'a')
+message_cache = open(".message_cache.txt", 'a')
 
 # helper functions
 def channelToID(ch):
@@ -62,7 +66,15 @@ def file_len(fname):
 
 # messaging functions
 def postMessage(ch,message):
-    if(str(args.message).lower() != "null"):
+    if(str(message).lower() != "null"):
+        try:
+            if(message[0] == '@'):
+                temp = message[1:message.index(' ')]
+                temp_id = usernameToID(temp)
+                nt = message.replace(message[0:message.index(' ')],'<@' + temp_id + '|' + temp + '>')
+                message = nt
+        except:
+            next
         s = sc.api_call("chat.postMessage", channel=ch, text=message)['message']
         message_cache.write(str(s) + "\n")
         print("Posted: '" + message + "' in " + ch)
@@ -77,9 +89,6 @@ def sendMessage(receiver,message):
         m['send_to'] = receiver
         message_cache.write(str(m) + "\n")
         print("Sent '" + message + "' to " + receiver)
-
-def updateMessage(time,channel,message):
-    print("WIP")
 
 # file functions
 def fileUpload(fn,address,cm=None,ti=None):
@@ -361,7 +370,7 @@ def listFiles(_address=None,_type=None,_count=None,_user=None):
 def listSent(address=None):
     if(address == None):
         try:
-            l = file_len('cache/.message_cache.txt')
+            l = file_len('.message_cache.txt')
         except:
             l = 0
         p = ''
@@ -370,26 +379,72 @@ def listSent(address=None):
 
         print(str(l) + " message" + p + " sent")
         i = 1
-        with open('cache/.message_cache.txt') as f:
+        with open('.message_cache.txt') as f:
             for line in f:
                 dl = ast.literal_eval(line)
-                print("[" + str(i) + "] [To: " + dl['send_to']+ "] " + dl['text'])
+                print("[" + str(i) + "][r:" + dl['send_to']+ "] " + dl['text'])
                 i += 1
 
+# history functions
+def view(view_query,_count=None,np=False):
+    try:
+        temp = view_query
+        if(view_query[0] == '#'):
+            temp = view_query.replace('#','')
+            view_query = temp
+        view_query = channelToID(view_query)
+    except:
+        print("Channel not '" + view_query + "' not found")
+        return
+    if(_count == None):
+        _count = 100
+    s = sc.api_call("channels.history",channel=view_query,count=_count)
+
+    stamps = []
+    output = []
+    for x in s:
+        m = s['messages']
+        for y in range(0,len(m)):
+            t = m[y]['text']
+            ts = m[y]['ts']
+            try:
+                u = idToUser(m[y]['user'])
+                c = "[@" + u + "] " + t
+            except:
+                c = "[BOT] " + t
+            if(not(ts in stamps)):
+                stamps.append(ts)
+                output.append(c)
+
+    output.reverse()
+    if(not(np)):
+        print('#' + temp)
+        for x in output:
+            print(x)
+    return output
+
+def reply(reply,channel):
+    posts = view(channel,10,True)
+    user = sc.api_call("auth.test")['user']
+    formatted_user = '<@' + usernameToID(user) + "> "
+    for x in posts:
+        if(formatted_user in x):
+            left_bound = x.index('@') + 1
+            right_bound = x.index(']')
+            reply_user = x[left_bound:right_bound]
+            formatted_reply = '<@' + usernameToID(reply_user) + "|" + reply_user + "> " + reply
+            postMessage(channel,formatted_reply)
+            break
 # decides what functions to call
 def delegate(args):
     if(args.post != None):
-        if(args.channel != None):
-            args.address = args.channel
         try:
-            postMessage(args.address, args.post)
+            postMessage(args.post[1], args.post[0])
         except:
             print("Error: Invalid channel")
     elif(args.send != None):
-        if(args.receiver != None):
-            args.address = args.receiver
         try:
-            sendMessage(args.address, args.send)
+            sendMessage(args.send[1], args.send[0])
         except:
             print("Error: Invalid recipent")
     elif(args.update != None):
@@ -450,23 +505,28 @@ def delegate(args):
             fileUpload(args.upload,args.address,args.comment,args.label)
         else:
             print("Error: You must provide a channel or channels")
+    elif(args.view != None):
+        view(args.view,args.count)
+    elif(args.reply != None):
+        reply(args.reply,args.channel)
     else:
         print("Invalid command")
 
 # initiates program
-#try:
-delegate(args)
-'''except Exception as e:
+try:
+    delegate(args)
+except Exception as e:
     if(e.__class__.__name__ == 'TimeOutError'):
         print("Operation Timed Out; try again.")
     elif (e.__class__.__name__ == 'ConnectionError'):
         print("Unable to connect. Reconnect to your wifi and try again")
     else:
-        print("Unknown error")
-        x = input("Enter developer code to view error message > ")
-        if(x == os.environ['DEV_TOKEN']):
-            print(str(e.__class__.__name__) + ": " + str(e))
-        else:
-            print("Incorrect developer code")'''
+        print("You found an error. Darn. Let me know so I can fix it: jake.lawrence24@gmail.com")
+        funny_videos = ['https://youtu.be/420eCJ7cKaE','https://youtu.be/vGyHXW0lwZY',
+        'https://youtu.be/8PpXAPanaDU','https://youtu.be/V4MNbTGl0v4','https://youtu.be/bWhu0LovWgY',
+        'https://youtu.be/m-1dApazt-U','https://youtu.be/_WyVZt77CM4']
+        funny_video_link = funny_videos[random.randint(0,len(funny_videos)-1)]
+        print("A funny video for your troubles: " + funny_video_link)
+        print(str(e.__class__.__name__) + ": " + str(e))
 # closes cache
 message_cache.close()
