@@ -4,6 +4,13 @@ import argparse
 import ast
 import random
 
+from setuptools import setup, find_packages
+setup(
+    name="Slack",
+    version="0.1",
+    packages=find_packages(),
+)
+
 SLACK_TOKEN = os.environ['SLACK_TOKEN']
 sc = SlackClient(SLACK_TOKEN)
 
@@ -447,9 +454,6 @@ def delegate(args):
             sendMessage(args.send[1], args.send[0])
         except:
             print("Error: Invalid recipent")
-    elif(args.update != None):
-        e = "Error: Update must contain valid timestamp, channel, and message fields"
-        updateMessage(args.time, args.channel, args.message)
     elif(args.list != None):
         if(str(args.list).lower() == "channels"):
             if(args.query != None):

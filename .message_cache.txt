@@ -17,3 +17,5 @@
 {'text': '<@U3JUR8GH2|jake> this is a test', 'type': 'message', 'username': 'Slack API Tester', 'bot_id': 'B3J5ZU2N4', 'subtype': 'bot_message', 'ts': '1483321216.000008'}
 {'ts': '1483321287.000009', 'bot_id': 'B3J5ZU2N4', 'username': 'Slack API Tester', 'text': '@jae this is a test', 'type': 'message', 'subtype': 'bot_message'}
 {'type': 'message', 'username': 'Slack API Tester', 'ts': '1483378718.048495', 'text': '<@U3JUR8GH2|jake> this is a test', 'subtype': 'bot_message', 'bot_id': 'B3J5ZU2N4'}
+{'type': 'message', 'subtype': 'bot_message', 'text': '<@U3JUR8GH2|jake> this is a test', 'ts': '1483381759.000002', 'bot_id': 'B3J5ZU2N4', 'username': 'Slack API Tester'}
+{'username': 'Slack API Tester', 'ts': '1483381980.000003', 'bot_id': 'B3J5ZU2N4', 'text': '<@U3JUR8GH2|jake> this is a test', 'subtype': 'bot_message', 'type': 'message'}
